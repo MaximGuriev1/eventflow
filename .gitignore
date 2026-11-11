@@ -1,0 +1,17 @@
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editors
+.idea/
+.vscode/
+*.swp
+
+# Logs
+*.log
+
+# Local environment
+.env
+.env.*
+node_modules/
