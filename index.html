@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>EventFlow — участники события</title>
+  <meta name="description" content="Локальный дашборд EventFlow: участники события, статусы и резервные копии.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%237c3aed'/%3E%3Ccircle cx='16' cy='16' r='7' fill='none' stroke='white' stroke-width='2.5'/%3E%3Ccircle cx='16' cy='16' r='2.4' fill='white'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body data-state="loading">
+  <a class="skip-link" href="#dashboard">К основному содержимому</a>
+
+  <div class="app">
+    <header class="brandbar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="7.5"/>
+            <circle cx="12" cy="12" r="2.5" fill="currentColor" stroke="none"/>
+          </svg>
+        </span>
+        <span class="brand-name">EventFlow</span>
+      </div>
+    </header>
+
+    <main id="dashboard" class="dashboard" tabindex="-1">
+      <!-- Заголовок события и краткие настройки -->
+      <div class="page-head">
+        <div class="page-head-text">
+          <h1 class="event-title" id="event-title">
+            <span class="skeleton-text sk-title" aria-hidden="true"></span>
+          </h1>
+          <p class="event-meta" id="event-meta">
+            <span class="skeleton-text sk-meta" aria-hidden="true"></span>
+          </p>
+        </div>
+        <div class="page-actions">
+          <button type="button" class="btn btn--primary btn--lg" id="add-participant" data-action="add-participant">
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 5v14"/>
+              <path d="M5 12h14"/>
+            </svg>
+            Добавить участника
+          </button>
+        </div>
+      </div>
+
+      <!-- Четыре показателя -->
+      <section class="kpis" aria-label="Показатели участников">
+        <article class="kpi">
+          <span class="kpi-icon kpi-icon--total" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </span>
+          <div class="kpi-body">
+            <span class="kpi-label">Всего активных</span>
+            <span class="kpi-value" id="kpi-total"><span class="skeleton-text sk-number" aria-hidden="true"></span></span>
+          </div>
+        </article>
+        <article class="kpi">
+          <span class="kpi-icon kpi-icon--confirmed" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.78 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.76 4 4 0 0 1-4.78 4.78 4 4 0 0 1-6.74 0 4 4 0 0 1-4.78-4.78 4 4 0 0 1 0-6.76"/><path d="m9 12 2 2 4-4"/></svg>
+          </span>
+          <div class="kpi-body">
+            <span class="kpi-label">Подтверждены</span>
+            <span class="kpi-value" id="kpi-confirmed"><span class="skeleton-text sk-number" aria-hidden="true"></span></span>
+          </div>
+        </article>
+        <article class="kpi">
+          <span class="kpi-icon kpi-icon--checked" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="17 11 19 13 23 9"/></svg>
+          </span>
+          <div class="kpi-body">
+            <span class="kpi-label">Пришли</span>
+            <span class="kpi-value" id="kpi-checked-in"><span class="skeleton-text sk-number" aria-hidden="true"></span></span>
+          </div>
+        </article>
+        <article class="kpi">
+          <span class="kpi-icon kpi-icon--waitlist" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
+          </span>
+          <div class="kpi-body">
+            <span class="kpi-label">Лист ожидания</span>
+            <span class="kpi-value" id="kpi-waitlist"><span class="skeleton-text sk-number" aria-hidden="true"></span></span>
+          </div>
+        </article>
+      </section>
+
+      <div class="content-grid">
+        <!-- Таблица участников -->
+        <section class="panel" aria-labelledby="participants-heading">
+          <h2 class="visually-hidden" id="participants-heading">Список участников</h2>
+          <div class="toolbar">
+            <label class="search">
+              <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="11" cy="11" r="7"/>
+                <path d="m16.5 16.5 4.5 4.5"/>
+              </svg>
+              <span class="visually-hidden">Поиск по имени, email или компании</span>
+              <input type="search" id="search-input" placeholder="Поиск по имени, email или компании…" autocomplete="off">
+            </label>
+            <label class="select-field">
+              <span class="visually-hidden">Фильтр по статусу</span>
+              <select id="filter-status">
+                <option value="all">Все статусы</option>
+              </select>
+            </label>
+            <label class="select-field">
+              <span class="visually-hidden">Фильтр по типу билета</span>
+              <select id="filter-ticket">
+                <option value="all">Все билеты</option>
+              </select>
+            </label>
+            <label class="select-field">
+              <span class="visually-hidden">Сортировка</span>
+              <select id="sort">
+                <option value="registeredAt-desc">Сначала новые</option>
+                <option value="registeredAt-asc">Сначала старые</option>
+                <option value="name-asc">Имя: А–Я</option>
+                <option value="name-desc">Имя: Я–А</option>
+              </select>
+            </label>
+            <div class="toolbar-actions">
+              <button type="button" class="btn btn--outline" id="btn-import" data-action="import-csv">
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M4 21h16"/></svg>
+                Импорт CSV
+              </button>
+              <button type="button" class="btn btn--outline" id="btn-export" data-action="export-json">
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 17V5"/><path d="m7 10 5-5 5 5"/><path d="M4 21h16"/></svg>
+                Экспорт JSON
+              </button>
+              <button type="button" class="btn btn--outline" id="btn-restore" data-action="restore-json">
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 2.7-6.4L3 8"/><polyline points="3 3 3 8 8 8"/></svg>
+                Восстановить копию
+              </button>
+            </div>
+          </div>
+
+          <div class="table-scroll" tabindex="0">
+            <table class="participants-table">
+              <thead>
+                <tr>
+                  <th scope="col">Участник</th>
+                  <th scope="col">Email</th>
+                  <th scope="col">Компания</th>
+                  <th scope="col">Билет</th>
+                  <th scope="col">Статус</th>
+                  <th scope="col">Регистрация</th>
+                  <th scope="col">Приход</th>
+                  <th scope="col">Действия</th>
+                </tr>
+              </thead>
+              <tbody id="participants-body">
+                <!-- skeleton до окончания загрузки базы; заменяется из app.js -->
+                <tr class="skeleton-row">
+                  <td><span class="skeleton-text" style="width:64%"></span></td>
+                  <td><span class="skeleton-text" style="width:62%"></span></td>
+                  <td><span class="skeleton-text" style="width:52%"></span></td>
+                  <td><span class="skeleton-text" style="width:56%"></span></td>
+                  <td><span class="skeleton-text" style="width:52%"></span></td>
+                  <td><span class="skeleton-text" style="width:60%"></span></td>
+                  <td><span class="skeleton-text" style="width:40%"></span></td>
+                  <td><span class="skeleton-text" style="width:44%"></span></td>
+                </tr>
+                <tr class="skeleton-row">
+                  <td><span class="skeleton-text" style="width:58%"></span></td>
+                  <td><span class="skeleton-text" style="width:56%"></span></td>
+                  <td><span class="skeleton-text" style="width:48%"></span></td>
+                  <td><span class="skeleton-text" style="width:50%"></span></td>
+                  <td><span class="skeleton-text" style="width:46%"></span></td>
+                  <td><span class="skeleton-text" style="width:66%"></span></td>
+                  <td><span class="skeleton-text" style="width:38%"></span></td>
+                  <td><span class="skeleton-text" style="width:40%"></span></td>
+                </tr>
+                <tr class="skeleton-row">
+                  <td><span class="skeleton-text" style="width:66%"></span></td>
+                  <td><span class="skeleton-text" style="width:60%"></span></td>
+                  <td><span class="skeleton-text" style="width:54%"></span></td>
+                  <td><span class="skeleton-text" style="width:54%"></span></td>
+                  <td><span class="skeleton-text" style="width:50%"></span></td>
+                  <td><span class="skeleton-text" style="width:58%"></span></td>
+                  <td><span class="skeleton-text" style="width:44%"></span></td>
+                  <td><span class="skeleton-text" style="width:48%"></span></td>
+                </tr>
+                <tr class="skeleton-row">
+                  <td><span class="skeleton-text" style="width:60%"></span></td>
+                  <td><span class="skeleton-text" style="width:58%"></span></td>
+                  <td><span class="skeleton-text" style="width:50%"></span></td>
+                  <td><span class="skeleton-text" style="width:48%"></span></td>
+                  <td><span class="skeleton-text" style="width:44%"></span></td>
+                  <td><span class="skeleton-text" style="width:62%"></span></td>
+                  <td><span class="skeleton-text" style="width:40%"></span></td>
+                  <td><span class="skeleton-text" style="width:46%"></span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Журнал последних действий -->
+        <aside class="activity" aria-labelledby="activity-heading">
+          <h2 class="activity-title" id="activity-heading">Журнал действий</h2>
+          <ol class="activity-list" id="activity-list">
+            <li class="skeleton-item">
+              <span class="skeleton-circle" aria-hidden="true"></span>
+              <span class="skeleton-lines">
+                <span class="skeleton-text" style="width:82%"></span>
+                <span class="skeleton-text" style="width:48%"></span>
+              </span>
+            </li>
+            <li class="skeleton-item">
+              <span class="skeleton-circle" aria-hidden="true"></span>
+              <span class="skeleton-lines">
+                <span class="skeleton-text" style="width:72%"></span>
+                <span class="skeleton-text" style="width:40%"></span>
+              </span>
+            </li>
+            <li class="skeleton-item">
+              <span class="skeleton-circle" aria-hidden="true"></span>
+              <span class="skeleton-lines">
+                <span class="skeleton-text" style="width:78%"></span>
+                <span class="skeleton-text" style="width:52%"></span>
+              </span>
+            </li>
+          </ol>
+        </aside>
+      </div>
+    </main>
+  </div>
+
+  <!-- Диалог: одна форма для просмотра, создания и изменения участника -->
+  <dialog id="participant-dialog" class="participant-dialog" aria-labelledby="form-title">
+    <form id="participant-form" novalidate>
+      <header class="dialog-head">
+        <h2 id="form-title">Добавление участника</h2>
+        <button type="button" class="icon-btn dialog-close" id="form-close" aria-label="Закрыть форму">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+      </header>
+
+      <fieldset id="form-fields" class="form-body">
+        <legend class="visually-hidden">Поля участника</legend>
+        <div class="field">
+          <label for="field-name">Имя <span class="required-mark" aria-hidden="true">*</span></label>
+          <input type="text" id="field-name" name="name" maxlength="80" autocomplete="off" required aria-required="true" aria-describedby="error-name">
+          <p class="field-error" id="error-name" aria-live="polite" hidden></p>
+        </div>
+        <div class="field">
+          <label for="field-email">Email <span class="required-mark" aria-hidden="true">*</span></label>
+          <input type="email" id="field-email" name="email" maxlength="120" autocomplete="off" required aria-required="true" aria-describedby="error-email">
+          <p class="field-error" id="error-email" aria-live="polite" hidden></p>
+        </div>
+        <div class="field">
+          <label for="field-company">Компания <span class="field-hint">(необязательно)</span></label>
+          <input type="text" id="field-company" name="company" maxlength="80" autocomplete="off">
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="field-ticket">Тип билета</label>
+            <select id="field-ticket"></select>
+          </div>
+          <div class="field">
+            <label for="field-status">Статус</label>
+            <select id="field-status"></select>
+          </div>
+        </div>
+        <div class="field checkbox-field">
+          <label class="checkbox-control" for="field-checked">
+            <input type="checkbox" id="field-checked" name="checkedIn" aria-describedby="error-checked checked-note">
+            <span>Отметка о прибытии</span>
+          </label>
+          <p class="field-note" id="checked-note" aria-live="polite" hidden></p>
+          <p class="field-error" id="error-checked" aria-live="polite" hidden></p>
+        </div>
+      </fieldset>
+
+      <footer class="dialog-actions">
+        <button type="button" class="btn btn--outline" id="form-edit" hidden>Изменить</button>
+        <button type="button" class="btn btn--outline" id="form-cancel">Отмена</button>
+        <button type="submit" class="btn btn--primary" id="form-submit" disabled>Сохранить</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <!-- Диалог импорта CSV: выбор файла → предпросмотр → подтверждение -->
+  <dialog id="import-dialog" class="import-dialog" aria-labelledby="import-title">
+    <form id="import-form" novalidate>
+      <header class="dialog-head">
+        <h2 id="import-title">Импорт CSV</h2>
+        <button type="button" class="icon-btn dialog-close" id="import-close" aria-label="Закрыть импорт">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+      </header>
+
+      <div class="import-body">
+        <!-- Шаг 1: выбор файла -->
+        <div class="import-choose" id="import-choose">
+          <p class="import-hint">Выберите CSV-файл с участниками. Поддерживаются колонки
+            name, email, company, ticket, status, checked_in, registered_at.</p>
+          <button type="button" class="btn btn--primary" id="import-file-trigger">
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M4 21h16"/></svg>
+            Выбрать файл
+          </button>
+          <p class="import-file-name" id="import-file-name" hidden></p>
+          <input type="file" id="import-file" accept=".csv,text/csv" hidden>
+        </div>
+
+        <!-- Шаг 2: предпросмотр -->
+        <div class="import-preview" id="import-preview" hidden>
+          <p class="import-file-name" id="import-file-name-preview"></p>
+          <div class="import-stats" id="import-stats"></div>
+          <p class="import-legend" id="import-legend" hidden></p>
+          <div class="import-issues">
+            <h3 class="import-issues-title" id="import-issues-title">Ошибки</h3>
+            <p class="import-issues-empty" id="import-issues-ok" hidden>Ошибок нет — все строки готовы к импорту.</p>
+            <ol class="import-issues-list" id="import-issues-list"></ol>
+          </div>
+        </div>
+
+        <p class="import-file-error" id="import-file-error" aria-live="polite" hidden></p>
+      </div>
+
+      <footer class="dialog-actions">
+        <button type="button" class="btn btn--outline" id="import-cancel">Отмена</button>
+        <button type="button" class="btn btn--primary" id="import-submit" disabled>
+          Импортировать корректные строки
+        </button>
+      </footer>
+    </form>
+  </dialog>
+
+  <!-- Диалог восстановления копии: выбор файла → предпросмотр → отдельное подтверждение -->
+  <dialog id="restore-dialog" class="restore-dialog" aria-labelledby="restore-title">
+    <form id="restore-form" novalidate>
+      <header class="dialog-head">
+        <h2 id="restore-title">Восстановление из копии</h2>
+        <button type="button" class="icon-btn dialog-close" id="restore-close" aria-label="Закрыть восстановление">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+      </header>
+
+      <div class="import-body">
+        <!-- Шаг 1: выбор файла -->
+        <div class="import-choose" id="restore-choose">
+          <p class="import-hint">Выберите JSON-файл резервной копии EventFlow. Текущие участники и журнал
+            будут полностью заменены данными из копии — это действие нельзя отменить.</p>
+          <button type="button" class="btn btn--primary" id="restore-file-trigger">
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 2.7-6.4L3 8"/><polyline points="3 3 3 8 8 8"/></svg>
+            Выбрать файл
+          </button>
+          <p class="import-file-name" id="restore-file-name" hidden></p>
+          <input type="file" id="restore-file" accept=".json,application/json" hidden>
+        </div>
+
+        <!-- Шаг 2: предпросмотр и подтверждение полной замены -->
+        <div class="import-preview" id="restore-preview" hidden>
+          <p class="import-file-name" id="restore-file-name-preview"></p>
+          <div class="import-stats" id="restore-stats"></div>
+          <p class="import-legend" id="restore-legend" hidden></p>
+          <div class="restore-warning">
+            <strong>Текущие данные будут полностью заменены.</strong>
+            <span id="restore-current"></span>
+          </div>
+          <label class="checkbox-control" for="restore-save-current">
+            <input type="checkbox" id="restore-save-current" checked>
+            <span>Сначала скачать текущую копию</span>
+          </label>
+        </div>
+
+        <p class="import-file-error" id="restore-file-error" aria-live="polite" hidden></p>
+      </div>
+
+      <footer class="dialog-actions">
+        <button type="button" class="btn btn--outline" id="restore-cancel">Отмена</button>
+        <button type="button" class="btn btn--danger" id="restore-submit" disabled>Заменить данные</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <!-- Тосты: success / error + действие «Отменить» у архивации -->
+  <div class="toast-region" id="toast-region" aria-live="polite"></div>
+
+  <!-- Фатальная ошибка: база недоступна -->
+  <div class="fatal" id="fatal" hidden>
+    <section class="fatal-card" role="alert">
+      <span class="fatal-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.6 1.9 18a2 2 0 0 0 1.7 3h16.8a2 2 0 0 0 1.7-3L13.7 3.6a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+      </span>
+      <h2 class="fatal-title">Не удалось открыть базу данных</h2>
+      <p class="fatal-text" id="fatal-text">EventFlow хранит данные в локальной базе IndexedDB вашего браузера. Сейчас доступ к ней недоступен, данные не изменены.</p>
+      <button type="button" class="btn btn--primary" id="retry">Повторить</button>
+    </section>
+  </div>
+
+  <script src="assets/js/db.js" defer></script>
+  <script src="assets/js/csv.js" defer></script>
+  <script src="assets/js/app.js" defer></script>
+</body>
+</html>
